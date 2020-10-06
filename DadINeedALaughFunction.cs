@@ -19,6 +19,9 @@ namespace DadINeedALaughBot
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            var accountSID = Environment.GetEnvironmentVariable("TWILIO_ACCOUNT_SID");
+            var authToken = Environment.GetEnvironmentVariable("TWILIO_AUTH_TOKEN");
+
             string name = req.Query["name"];
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
