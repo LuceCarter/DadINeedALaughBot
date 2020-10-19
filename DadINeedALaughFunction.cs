@@ -7,6 +7,10 @@ using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Twilio;
+using Twilio.Rest.Api.V2010.Account;
+using Twilio.Types;
+
 
 namespace DadINeedALaughBot
 {
@@ -17,10 +21,13 @@ namespace DadINeedALaughBot
             [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            log.LogInformation("Welcome to DadINeedALaughBot!");
 
             var accountSID = Environment.GetEnvironmentVariable("TWILIO_ACCOUNT_SID");
             var authToken = Environment.GetEnvironmentVariable("TWILIO_AUTH_TOKEN");
+            var personalNumber = Environment.GetEnvironmentVariable("LC_NUMBER_WHATSAPP");
+
+            TwilioClient.Init(accountSID, authToken);
 
             string name = req.Query["name"];
 
@@ -28,11 +35,13 @@ namespace DadINeedALaughBot
             dynamic data = JsonConvert.DeserializeObject(requestBody);
             name = name ?? data?.name;
 
-            string responseMessage = string.IsNullOrEmpty(name)
-                ? "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response."
-                : $"Hello, {name}. This HTTP triggered function executed successfully.";
+            var message = MessageResource.Create(
+            body: "This is a message that I want to send over WhatsApp with Twilio!",
+            from: new Twilio.Types.PhoneNumber("whatsapp:+14155238886"),
+            to: new Twilio.Types.PhoneNumber(personalNumber)
+            );     
 
-            return new OkObjectResult(responseMessage);
+            return new OkObjectResult("Message SID: " + message.Sid + " , Status Code: " + message.Status);
         }
     }
 }
